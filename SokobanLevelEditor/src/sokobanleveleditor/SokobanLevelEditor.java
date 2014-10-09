@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -15,6 +16,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
@@ -211,11 +213,11 @@ public class SokobanLevelEditor extends Application {
                 for (int j = 0; j < gridRows; j++) {
                     // DRAW THE CELL
                     gc.setFill(Color.LIGHTBLUE);
-                    gc.strokeRoundRect(x, y, w, h, 10, 10);
+                    gc.strokeRoundRect(x, y, w, h, 0, 0);
 
                     switch (grid[i][j]) {
                         case 0:
-                            gc.strokeRoundRect(x, y, w, h, 10, 10);
+                            gc.strokeRoundRect(x, y, w, h, 0, 0);
                             break;
                         case 1:
                             gc.drawImage(wallImage, x, y, w, h);
@@ -259,7 +261,7 @@ public class SokobanLevelEditor extends Application {
     private void initHandlers() {
         // WE'LL UPDATE THE CELL-TILE COUNTS WHEN THE
         // USER CLICKS THE MOUSE ON THE RENDERING PANEL
-        gridRenderer.setOnMouseClicked(mouseEvent -> {
+        gridRenderer.setOnMouseClicked((EventHandler<MouseEvent>)(mouseEvent) -> {
             // FIGURE OUT THE CORRESPONDING COLUMN & ROW
             double w = gridRenderer.getWidth() / gridColumns;
             double col = mouseEvent.getX() / w;
@@ -369,6 +371,7 @@ public class SokobanLevelEditor extends Application {
     public void initFileControls() {
         // INIT THE FILE CHOOSER CONTROL
         fileChooser = new FileChooser();
+	    fileChooser.setInitialDirectory(new File("E:/Dropbox/IntelliJ Projects/CSE219HW3/Sokoban_draft/data"));
 
         fileChooser.setTitle("Open Resource File");
         fileChooser.getExtensionFilters().addAll(

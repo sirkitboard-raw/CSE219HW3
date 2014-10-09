@@ -12,6 +12,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
 
+import javafx.scene.layout.*;
 import sokoban.file.SokobanFileLoader;
 import sokoban.game.SokobanGameData;
 import sokoban.game.SokobanGameStateManager;
@@ -30,12 +31,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -64,9 +59,9 @@ public class SokobanUI extends Pane {
 
     // SplashScreen
     private ImageView splashScreenImageView;
-    private Pane splashScreenPane;
+    private StackPane splashScreenPane;
     private Label splashScreenImageLabel;
-    private HBox levelSelectionPane;
+    private FlowPane levelSelectionPane;
     private ArrayList<Button> levelButtons;
 
     // NorthToolBar
@@ -166,7 +161,7 @@ public class SokobanUI extends Pane {
         props.addProperty(SokobanPropertyType.INSETS, "5");
         String str = props.getProperty(SokobanPropertyType.INSETS);
 
-        splashScreenPane = new FlowPane();
+        splashScreenPane = new StackPane();
 
         Image splashScreenImage = loadImage(splashScreenImagePath);
         splashScreenImageView = new ImageView(splashScreenImage);
@@ -182,11 +177,13 @@ public class SokobanUI extends Pane {
                 .getPropertyOptionsList(SokobanPropertyType.LEVEL_OPTIONS);
         ArrayList<String> levelImages = props
                 .getPropertyOptionsList(SokobanPropertyType.LEVEL_IMAGE_NAMES);
-        //ArrayList<String> levelFiles = props
-        //        .getPropertyOptionsList(SokobanPropertyType.LEVEL_FILES);
+        ArrayList<String> levelFiles = props
+                .getPropertyOptionsList(SokobanPropertyType.LEVEL_FILES);
 
-        levelSelectionPane = new HBox();
-        levelSelectionPane.setSpacing(10.0);
+        levelSelectionPane = new FlowPane();
+        //levelSelectionPane.setSpacing(10.0);
+		levelSelectionPane.setHgap(10.0);
+		levelSelectionPane.setVgap(10.0);
         levelSelectionPane.setAlignment(Pos.CENTER);
         // add key listener
         levelButtons = new ArrayList<Button>();
@@ -200,25 +197,33 @@ public class SokobanUI extends Pane {
 
             // AND BUILD THE BUTTON
             Button levelButton = new Button();
+			levelButton.setStyle("-fx-background-color: transparent");
             levelButton.setGraphic(levelImageView);
-            
             // CONNECT THE BUTTON TO THE EVENT HANDLER
             levelButton.setOnAction(new EventHandler<ActionEvent>() {
 
-                @Override
-                public void handle(ActionEvent event) {
-                    // TODO
-                    //eventHandler.respondToSelectLevelRequest(level);
-                }
-            });
+				@Override
+				public void handle(ActionEvent event) {
+					// TODO
+					//eventHandler.respondToSelectLevelRequest(level);
+					initSokobanUI();
+				}
+			});
             // TODO
             //levelSelectionPane.getChildren().add(levelButton);
             // TODO: enable only the first level
-            levelButton.setDisable(true);
+            //levelButton.setDisable(true);
+			levelButton.setMinHeight(160);
+			levelButton.setMinHeight(160);
+			levelButton.setMaxWidth(160);
+			levelButton.setMaxHeight(160);
+			levelImageView.fitWidthProperty().bind(levelButton.maxWidthProperty());
+			levelImageView.fitHeightProperty().bind(levelButton.maxHeightProperty());
+			levelSelectionPane.getChildren().add(levelButton);
         }
 
         mainPane.setCenter(splashScreenPane);
-        //mainPane.setBottom(levelSelectionPane);
+		splashScreenPane.getChildren().add(levelSelectionPane);
     }
 
     /**
@@ -239,7 +244,7 @@ public class SokobanUI extends Pane {
 
         // OUR WORKSPACE WILL STORE EITHER THE GAME, STATS,
         // OR HELP UI AT ANY ONE TIME
-        //initWorkspace();
+        initWorkspace();
         //initGameScreen();
         //initStatsPane();
         //initHelpPane();
@@ -263,6 +268,7 @@ public class SokobanUI extends Pane {
         // MAKE AND INIT THE GAME BUTTON
         gameButton = initToolbarButton(northToolbar,
                 SokobanPropertyType.GAME_IMG_NAME);
+		//gameButton.setTooltip(new Tooltip(SokobanPropertyType.GAME_TOOLTIP.toString()));
         //setTooltip(gameButton, SokobanPropertyType.GAME_TOOLTIP);
         gameButton.setOnAction(new EventHandler<ActionEvent>() {
 
