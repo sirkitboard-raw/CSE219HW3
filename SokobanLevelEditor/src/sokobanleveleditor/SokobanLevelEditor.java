@@ -314,7 +314,9 @@ public class SokobanLevelEditor extends Application {
 
                     grid = newGrid;
                     gridColumns = initGridColumns;
+	                columnsTextField.setText(gridColumns+"");
                     gridRows = initGridRows;
+	                rowsTextField.setText(gridRows+"");
                     gridRenderer.repaint();
                 }
             } catch (Exception e) {
