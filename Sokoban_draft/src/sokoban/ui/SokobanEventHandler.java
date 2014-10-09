@@ -56,7 +56,7 @@ public class SokobanEventHandler {
     /**
      * This method responds to when the user requests to exit the application.
      *
-     * 
+     *
      */
     public void respondToExitRequest(Stage primaryStage) {
         // ENGLIS IS THE DEFAULT
