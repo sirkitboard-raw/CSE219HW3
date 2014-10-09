@@ -23,11 +23,18 @@ public class ArrowKeyHandler{
 		KeyCode keyCode = ke.getCode();
 
 		// IS CONTROL-C PRESSED?
-		if ((keyCode == KeyCode.CONTROL)
-				&& ke.isControlDown())
-		{
+		if (keyCode == KeyCode.LEFT) {
 			// A CHEAT TO DISPLAY THE SECRET WORD
-			ui.moveCharacter();
+			ui.moveCharacterLeft();
+		}
+		else if(keyCode == KeyCode.RIGHT) {
+			ui.moveCharacterRight();
+		}
+		else if(keyCode == KeyCode.UP) {
+			ui.moveCharacterUp();
+		}
+		else if(keyCode == KeyCode.DOWN) {
+			ui.moveCharacterDown();
 		}
 	}
 }

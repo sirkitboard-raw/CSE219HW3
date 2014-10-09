@@ -107,6 +107,9 @@ public class SokobanUI extends Pane {
 	private int numCols;
 	private int numRows;
 	private int[][] levelData;
+	private int[] charPosition = new int[2];
+	private ArrayList<int[]> boxPositions = new ArrayList<int[]>();
+	private ArrayList<int[]> destinations = new ArrayList<int[]>();
 
 	//Game Renderer
 	GameRenderer gameRenderer;
@@ -393,7 +396,7 @@ public class SokobanUI extends Pane {
     }
 	private void initGameScreen() {
 		PropertiesManager props = PropertiesManager.getPropertiesManager();
-		workspace.getChildren().add(0,gamePanel);
+		changeWorkspace(SokobanUIState.PLAY_GAME_STATE);
 	}
 	public void initLevel(String level) {
 		PropertiesManager props = PropertiesManager.getPropertiesManager();
@@ -404,7 +407,12 @@ public class SokobanUI extends Pane {
 			for(int i=0;i<levelData.length;i++) {
 				for(int j=0;j<levelData[i].length;j++) {
 					switch (levelData[i][j]) {
-						case 1:
+						case 3:
+							int[] destination = new int[2];
+							destination[0] = i;
+							destination[1] = j;
+							destinations.add(destination);
+							break;
 					}
 					System.out.print(levelData[i][j] + " ");
 				}
@@ -427,9 +435,86 @@ public class SokobanUI extends Pane {
 		});
 	}
 
-	public void moveCharacter() {
+	public void moveCharacterLeft() {
+		if(levelData[charPosition[0]-1][charPosition[1]] == 5) {
+			levelData[charPosition[0]][charPosition[1]] = 5;
+			charPosition[0] -=1;
+			levelData[charPosition[0]][charPosition[1]] = 4;
+		}
+		else if(levelData[charPosition[0]-1][charPosition[1]] == 1) {
 
+		}
+		else if (levelData[charPosition[0]-1][charPosition[1]] == 2) {
+			if(levelData[charPosition[0]-2][charPosition[1]] == 5 || levelData[charPosition[0]-2][charPosition[1]] == 3 ) {
+				levelData[charPosition[0]-2][charPosition[1]] = 2;
+				levelData[charPosition[0]][charPosition[1]] = 5;
+				charPosition[0] -=1;
+				levelData[charPosition[0]][charPosition[1]] = 4;
+			}
+		}
+		gameRenderer.repaint();
 	}
+
+	public void moveCharacterRight() {
+		if(levelData[charPosition[0]+1][charPosition[1]] == 5) {
+			levelData[charPosition[0]][charPosition[1]] = 5;
+			charPosition[0] +=1;
+			levelData[charPosition[0]][charPosition[1]] = 4;
+		}
+		else if(levelData[charPosition[0]+1][charPosition[1]] == 1) {
+
+		}
+		else if (levelData[charPosition[0]+1][charPosition[1]] == 2) {
+			if(levelData[charPosition[0]+2][charPosition[1]] == 5 || levelData[charPosition[0]-2][charPosition[1]] == 3 ) {
+				levelData[charPosition[0]+2][charPosition[1]] = 2;
+				levelData[charPosition[0]][charPosition[1]] = 5;
+				charPosition[0] +=1;
+				levelData[charPosition[0]][charPosition[1]] = 4;
+			}
+		}
+		gameRenderer.repaint();
+	}
+
+	public void moveCharacterUp() {
+		if(levelData[charPosition[0]][charPosition[1]-1] == 5) {
+			levelData[charPosition[0]][charPosition[1]] = 5;
+			charPosition[1] -=1;
+			levelData[charPosition[0]][charPosition[1]] = 4;
+		}
+		else if(levelData[charPosition[0]][charPosition[1]-1] == 1) {
+
+		}
+		else if (levelData[charPosition[0]][charPosition[1]-1] == 2) {
+			if(levelData[charPosition[0]][charPosition[1]-2] == 5 || levelData[charPosition[0]][charPosition[1]-2] == 3 ) {
+				levelData[charPosition[0]][charPosition[1]-2] = 2;
+				levelData[charPosition[0]][charPosition[1]-2] = 5;
+				charPosition[1] -=1;
+				levelData[charPosition[5]][charPosition[1]] = 4;
+			}
+		}
+		gameRenderer.repaint();
+	}
+
+	public void moveCharacterDown() {
+		if(levelData[charPosition[0]][charPosition[1]+1] == 5) {
+			levelData[charPosition[0]][charPosition[1]] = 5;
+			charPosition[1] +=1;
+			levelData[charPosition[0]][charPosition[1]] = 4;
+		}
+		else if(levelData[charPosition[0]][charPosition[1]+1] == 1) {
+
+		}
+		else if (levelData[charPosition[0]][charPosition[1]+1] == 2) {
+			if(levelData[charPosition[0]][charPosition[1]+2] == 5 || levelData[charPosition[0]][charPosition[1]+2] == 3 ) {
+				levelData[charPosition[0]][charPosition[1]+2] = 2;
+				levelData[charPosition[0]][charPosition[1]+2] = 5;
+				charPosition[1] +=1;
+				levelData[charPosition[0]][charPosition[1]] = 4;
+			}
+		}
+		gameRenderer.repaint();
+	}
+
 
 	class GameRenderer extends Canvas {
 		double cellWidth;
@@ -466,13 +551,23 @@ public class SokobanUI extends Pane {
 							gc.drawImage(wallImage,x,y,cellWidth,cellHeight);
 							break;
 						case 2:
+							int[] boxPosition = new int[2];
+							boxPosition[0] = i;
+							boxPosition[1] = j;
+							boxPositions.add(boxPosition);
 							gc.drawImage(boxImage, x, y, cellWidth, cellHeight);
 							break;
 						case 3:
 							gc.drawImage(placeImage, x, y, cellWidth, cellHeight);
 							break;
 						case 4:
+							charPosition[0] = i;
+							charPosition[1] = j;
 							gc.drawImage(sokobanImage,x,y,cellWidth,cellHeight);
+							break;
+						case 5:
+							gc.setFill(Color.WHITE);
+							gc.fillRect(x,y,cellWidth,cellHeight);
 					}
 					String numToDraw = "" + levelData[i][j];
 					y+=cellHeight;
