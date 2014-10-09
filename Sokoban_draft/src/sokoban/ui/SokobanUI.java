@@ -3,6 +3,7 @@ package sokoban.ui;
 import application.Main;
 import application.Main.SokobanPropertyType;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -73,9 +74,6 @@ public class SokobanUI extends Pane {
 
     // GamePane
     private Label SokobanLabel;
-    private Button newGameButton;
-    private HBox letterButtonsPane;
-    private HashMap<Character, Button> letterButtons;
     private BorderPane gamePanel = new BorderPane();
 
     //StatsPane
@@ -103,6 +101,7 @@ public class SokobanUI extends Pane {
     private SokobanEventHandler eventHandler;
     private SokobanErrorHandler errorHandler;
     private SokobanDocumentManager docManager;
+	private SokobanFileLoader fileLoader;
 
     SokobanGameStateManager gsm;
 
@@ -111,6 +110,7 @@ public class SokobanUI extends Pane {
         eventHandler = new SokobanEventHandler(this);
         errorHandler = new SokobanErrorHandler(primaryStage);
         docManager = new SokobanDocumentManager(this);
+		fileLoader = new SokobanFileLoader(this);
         initMainPane();
         initSplashScreen();
     }
@@ -191,6 +191,7 @@ public class SokobanUI extends Pane {
 
             // GET THE LIST OF LEVEL OPTIONS
             String level = levels.get(i);
+			String levelFile = levelFiles.get(i);
             String levelImageName = levelImages.get(i);
             Image levelImage = loadImage(levelImageName);
             ImageView levelImageView = new ImageView(levelImage);
@@ -205,8 +206,8 @@ public class SokobanUI extends Pane {
 				@Override
 				public void handle(ActionEvent event) {
 					// TODO
-					//eventHandler.respondToSelectLevelRequest(level);
 					initSokobanUI();
+					eventHandler.respondToSelectLevelRequest(levelFile);
 				}
 			});
             // TODO
@@ -217,6 +218,7 @@ public class SokobanUI extends Pane {
 			levelButton.setMinHeight(160);
 			levelButton.setMaxWidth(160);
 			levelButton.setMaxHeight(160);
+			//levelButton.setmana
 			levelImageView.fitWidthProperty().bind(levelButton.maxWidthProperty());
 			levelImageView.fitHeightProperty().bind(levelButton.maxHeightProperty());
 			levelSelectionPane.getChildren().add(levelButton);
@@ -245,7 +247,7 @@ public class SokobanUI extends Pane {
         // OUR WORKSPACE WILL STORE EITHER THE GAME, STATS,
         // OR HELP UI AT ANY ONE TIME
         initWorkspace();
-        //initGameScreen();
+        initGameScreen();
         //initStatsPane();
         //initHelpPane();
 
@@ -254,9 +256,38 @@ public class SokobanUI extends Pane {
 
     }
 
+
+	private void initGameScreen() {
+		PropertiesManager props = PropertiesManager.getPropertiesManager();
+		workspace.getChildren().add(0,gamePanel);
+	}
+
+	public void initLevel(String level) {
+		PropertiesManager props = PropertiesManager.getPropertiesManager();
+		try {
+			int[][] levelData = fileLoader.loadLevel(level);
+			GridPane gridPane = new GridPane();
+			for(int i=0;i<levelData.length;i++) {
+				for(int j=0;j<levelData[i].length;j++) {
+					switch (levelData[i][j]) {
+						case 1:
+					}
+					System.out.print(levelData[i][j] + " ");
+				}
+				System.out.println();
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+			errorHandler.processError(SokobanPropertyType.ERROR_INVALID_FILE);
+		}
+
+	}
     /**
      * This function initializes all the controls that go in the north toolbar.
      */
+
     private void initNorthToolbar() {
         // MAKE THE NORTH TOOLBAR, WHICH WILL HAVE FOUR BUTTONS
         northToolbar = new HBox();
@@ -370,7 +401,6 @@ public class SokobanUI extends Pane {
         // TOOLBAR
         workspace = new Pane();
         mainPane.setCenter(workspace);
-        //mainPane.getChildren().add(workspace);
         System.out.println("in the initWorkspace");
     }
 

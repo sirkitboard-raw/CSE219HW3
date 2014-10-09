@@ -213,11 +213,11 @@ public class SokobanLevelEditor extends Application {
                 for (int j = 0; j < gridRows; j++) {
                     // DRAW THE CELL
                     gc.setFill(Color.LIGHTBLUE);
-                    gc.strokeRoundRect(x, y, w, h, 0, 0);
+                    gc.strokeRoundRect(x, y, w, h, 10, 10);
 
                     switch (grid[i][j]) {
                         case 0:
-                            gc.strokeRoundRect(x, y, w, h, 0, 0);
+                            gc.strokeRoundRect(x, y, w, h, 10, 10);
                             break;
                         case 1:
                             gc.drawImage(wallImage, x, y, w, h);
@@ -235,13 +235,13 @@ public class SokobanLevelEditor extends Application {
 
                     // THEN RENDER THE TEXT
                     String numToDraw = "" + grid[i][j];
-                    double xInc = (w / 2) - (10 / 2);
+                    double xInc = (w / 2) + (10 / 4);
                     double yInc = (h / 2) + (10 / 4);
                     x += xInc;
                     y += yInc;
                     gc.setFill(Color.RED);
                     gc.fillText(numToDraw, x, y);
-                    x -= xInc;
+                    x -= xInc-1;
                     y -= yInc;
 
                     // ON TO THE NEXT ROW

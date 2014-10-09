@@ -49,6 +49,10 @@ public class SokobanEventHandler {
         gsm.startNewGame();
     }
 
+	public void respondToSelectLevelRequest(String level) {
+		ui.initLevel(level);
+	}
+
     /**
      * This method responds to when the user requests to exit the application.
      *

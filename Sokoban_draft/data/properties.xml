@@ -16,6 +16,8 @@
         <property name="DEFAULT_YES_TEXT"           value="Yes"></property>
         <property name="DEFAULT_NO_TEXT"            value="No"></property>
         <property name="DEFAULT_EXIT_TEXT"          value="Are you sure you wish to Quit?"></property>
+        <property name="ERROR_LEVEL_NOT_FOUND"      value="Level doesn't exist"></property>
+        <property name="ERROR_INVALID_FILE"         value="Invalid File"></property>
     </property_list>
     <property_options_list>
         <property_options name="LEVEL_OPTIONS">
