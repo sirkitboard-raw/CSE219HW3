@@ -103,9 +103,18 @@ public class SokobanUI extends Pane {
     private SokobanDocumentManager docManager;
 	private SokobanFileLoader fileLoader;
 
+	//Level Data;
+	private int numCols;
+	private int numRows;
+	private int[][] levelData;
+
 	//Game Renderer
 	GameRenderer gameRenderer;
 	private GraphicsContext gc;
+
+	//Handlers
+	ArrowKeyHandler arrowKeyHandler;
+
 
     SokobanGameStateManager gsm;
 
@@ -115,6 +124,7 @@ public class SokobanUI extends Pane {
         errorHandler = new SokobanErrorHandler(primaryStage);
         docManager = new SokobanDocumentManager(this);
 		fileLoader = new SokobanFileLoader(this);
+		arrowKeyHandler = new ArrowKeyHandler(this);
         initMainPane();
         initSplashScreen();
     }
@@ -211,6 +221,7 @@ public class SokobanUI extends Pane {
 				public void handle(ActionEvent event) {
 					// TODO
 					initSokobanUI();
+					gsm.startNewGame();
 					eventHandler.respondToSelectLevelRequest(levelFile);
 				}
 			});
@@ -222,7 +233,7 @@ public class SokobanUI extends Pane {
 			levelButton.setMinHeight(160);
 			levelButton.setMaxWidth(160);
 			levelButton.setMaxHeight(160);
-			//levelButton.setmana
+
 			levelImageView.fitWidthProperty().bind(levelButton.maxWidthProperty());
 			levelImageView.fitHeightProperty().bind(levelButton.maxHeightProperty());
 			levelSelectionPane.getChildren().add(levelButton);
@@ -252,6 +263,7 @@ public class SokobanUI extends Pane {
         // OR HELP UI AT ANY ONE TIME
         initWorkspace();
         initGameScreen();
+		initHandlers();
         //initStatsPane();
         //initHelpPane();
 
@@ -386,8 +398,9 @@ public class SokobanUI extends Pane {
 	public void initLevel(String level) {
 		PropertiesManager props = PropertiesManager.getPropertiesManager();
 		try {
-			int[][] levelData = fileLoader.loadLevel(level);
-			GridPane gridPane = new GridPane();
+			levelData = fileLoader.loadLevel(level);
+			numCols = levelData.length;
+			numRows = levelData[0].length;
 			for(int i=0;i<levelData.length;i++) {
 				for(int j=0;j<levelData[i].length;j++) {
 					switch (levelData[i][j]) {
@@ -397,7 +410,7 @@ public class SokobanUI extends Pane {
 				}
 				System.out.println();
 			}
-			gameRenderer = new GameRenderer(levelData,levelData.length, levelData[0].length);
+			gameRenderer = new GameRenderer();
 			gamePanel.setCenter(gameRenderer);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -408,24 +421,28 @@ public class SokobanUI extends Pane {
 
 	}
 
+	public void initHandlers() {
+		mainPane.setOnKeyPressed((EventHandler<KeyEvent>)ke -> {
+			arrowKeyHandler.keyPressed(ke);
+		});
+	}
+
+	public void moveCharacter() {
+
+	}
+
 	class GameRenderer extends Canvas {
 		double cellWidth;
 		double cellHeight;
-		int numCols;
-		int numRows;
-		int[][] canvasData;
 		PropertiesManager props = PropertiesManager.getPropertiesManager();
 		Image wallImage = new Image("file:images/wall.png");
 		Image boxImage = new Image("file:images/box.png");
 		Image placeImage = new Image("file:images/place.png");
 		Image sokobanImage = new Image("file:images/Sokoban.png");
 
-		public GameRenderer(int[][] data, int x, int y) {
+		public GameRenderer() {
 			this.setWidth(800);
-			this.setHeight(500);
-			numCols = x;
-			numRows = y;
-			canvasData = data;
+			this.setHeight(800);
 			repaint();
 
 		}
@@ -438,11 +455,13 @@ public class SokobanUI extends Pane {
 
 			int x = 0, y=0;
 			x= (int)((this.getWidth() - (numCols*cellWidth))/2);
+			gc.setFill(Color.DARKORANGE);
+			gc.fillRect(0,0,this.getWidth(), this.getHeight());
 			for(int i=0;i<numCols;i++) {
 				y=0;
 				for(int j=0;j<numRows;j++) {
 					gc.setFill(Color.DARKORANGE);
-					switch (canvasData[i][j]) {
+					switch (levelData[i][j]) {
 						case 1:
 							gc.drawImage(wallImage,x,y,cellWidth,cellHeight);
 							break;
@@ -455,7 +474,7 @@ public class SokobanUI extends Pane {
 						case 4:
 							gc.drawImage(sokobanImage,x,y,cellWidth,cellHeight);
 					}
-					String numToDraw = "" + canvasData[i][j];
+					String numToDraw = "" + levelData[i][j];
 					y+=cellHeight;
 				}
 				x+=cellWidth;
