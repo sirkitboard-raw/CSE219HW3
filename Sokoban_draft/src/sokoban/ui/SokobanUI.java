@@ -2,7 +2,6 @@ package sokoban.ui;
 
 import application.Main;
 import application.Main.SokobanPropertyType;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
@@ -13,6 +12,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
 
+import javafx.scene.canvas.*;
 import javafx.scene.layout.*;
 import sokoban.file.SokobanFileLoader;
 import sokoban.game.SokobanGameData;
@@ -102,6 +102,10 @@ public class SokobanUI extends Pane {
     private SokobanErrorHandler errorHandler;
     private SokobanDocumentManager docManager;
 	private SokobanFileLoader fileLoader;
+
+	//Game Renderer
+	GameRenderer gameRenderer;
+	private GraphicsContext gc;
 
     SokobanGameStateManager gsm;
 
@@ -256,34 +260,6 @@ public class SokobanUI extends Pane {
 
     }
 
-
-	private void initGameScreen() {
-		PropertiesManager props = PropertiesManager.getPropertiesManager();
-		workspace.getChildren().add(0,gamePanel);
-	}
-
-	public void initLevel(String level) {
-		PropertiesManager props = PropertiesManager.getPropertiesManager();
-		try {
-			int[][] levelData = fileLoader.loadLevel(level);
-			GridPane gridPane = new GridPane();
-			for(int i=0;i<levelData.length;i++) {
-				for(int j=0;j<levelData[i].length;j++) {
-					switch (levelData[i][j]) {
-						case 1:
-					}
-					System.out.print(levelData[i][j] + " ");
-				}
-				System.out.println();
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-			errorHandler.processError(SokobanPropertyType.ERROR_INVALID_FILE);
-		}
-
-	}
     /**
      * This function initializes all the controls that go in the north toolbar.
      */
@@ -403,7 +379,89 @@ public class SokobanUI extends Pane {
         mainPane.setCenter(workspace);
         System.out.println("in the initWorkspace");
     }
+	private void initGameScreen() {
+		PropertiesManager props = PropertiesManager.getPropertiesManager();
+		workspace.getChildren().add(0,gamePanel);
+	}
+	public void initLevel(String level) {
+		PropertiesManager props = PropertiesManager.getPropertiesManager();
+		try {
+			int[][] levelData = fileLoader.loadLevel(level);
+			GridPane gridPane = new GridPane();
+			for(int i=0;i<levelData.length;i++) {
+				for(int j=0;j<levelData[i].length;j++) {
+					switch (levelData[i][j]) {
+						case 1:
+					}
+					System.out.print(levelData[i][j] + " ");
+				}
+				System.out.println();
+			}
+			gameRenderer = new GameRenderer(levelData,levelData.length, levelData[0].length);
+			gamePanel.setCenter(gameRenderer);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+			errorHandler.processError(SokobanPropertyType.ERROR_INVALID_FILE);
+		}
 
+	}
+
+	class GameRenderer extends Canvas {
+		double cellWidth;
+		double cellHeight;
+		int numCols;
+		int numRows;
+		int[][] canvasData;
+		PropertiesManager props = PropertiesManager.getPropertiesManager();
+		Image wallImage = new Image("file:images/wall.png");
+		Image boxImage = new Image("file:images/box.png");
+		Image placeImage = new Image("file:images/place.png");
+		Image sokobanImage = new Image("file:images/Sokoban.png");
+
+		public GameRenderer(int[][] data, int x, int y) {
+			this.setWidth(800);
+			this.setHeight(500);
+			numCols = x;
+			numRows = y;
+			canvasData = data;
+			repaint();
+
+		}
+
+		public void repaint() {
+			gc = this.getGraphicsContext2D();
+			gc.clearRect(0,0,this.getWidth(), this.getHeight());
+			cellHeight = this.getHeight() / numCols;
+			cellWidth = this.getHeight() / numRows;
+
+			int x = 0, y=0;
+			x= (int)((this.getWidth() - (numCols*cellWidth))/2);
+			for(int i=0;i<numCols;i++) {
+				y=0;
+				for(int j=0;j<numRows;j++) {
+					gc.setFill(Color.DARKORANGE);
+					switch (canvasData[i][j]) {
+						case 1:
+							gc.drawImage(wallImage,x,y,cellWidth,cellHeight);
+							break;
+						case 2:
+							gc.drawImage(boxImage, x, y, cellWidth, cellHeight);
+							break;
+						case 3:
+							gc.drawImage(placeImage, x, y, cellWidth, cellHeight);
+							break;
+						case 4:
+							gc.drawImage(sokobanImage,x,y,cellWidth,cellHeight);
+					}
+					String numToDraw = "" + canvasData[i][j];
+					y+=cellHeight;
+				}
+				x+=cellWidth;
+			}
+		}
+	}
 
     public Image loadImage(String imageName) {
         Image img = new Image(ImgPath + imageName);
