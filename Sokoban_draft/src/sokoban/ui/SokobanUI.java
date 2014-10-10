@@ -20,6 +20,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.media.AudioClip;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
@@ -134,6 +135,12 @@ public class SokobanUI extends Pane {
 
 	SokobanGameStateManager gsm;
 
+	//AudioFiles
+	AudioClip intro;
+	AudioClip move;
+	AudioClip win;
+	AudioClip lose;
+	AudioClip bump;
 	public SokobanUI() {
 		gsm = new SokobanGameStateManager(this);
 		eventHandler = new SokobanEventHandler(this);
@@ -143,6 +150,7 @@ public class SokobanUI extends Pane {
 		arrowKeyHandler = new ArrowKeyHandler(this);
 		mouseHandler = new MouseHandler(this);
 		initMainPane();
+		initAudio();
 		initSplashScreen();
 	}
 
@@ -187,7 +195,21 @@ public class SokobanUI extends Pane {
 		mainPane.setPadding(marginlessInsets);
 	}
 
+	public void initAudio() {
+		try {
+			File file = new File("audio/intro.mp3");
+			intro = new AudioClip(file.toURI().toURL().toString());
+			move = new AudioClip(new File("audio/charmoved.wav").toURI().toURL().toString());
+			bump = new AudioClip(new File("audio/invalidmove.wav").toURI().toURL().toString());
+			win = new AudioClip(new File("audio/youwin.wav").toURI().toURL().toString());
+			lose = new AudioClip(new File("audio/failsound.mp3").toURI().toURL().toString());
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void initSplashScreen() {
+		intro.play();
 		mainPane.getChildren().clear();
 		// INIT THE SPLASH SCREEN CONTROLS
 		PropertiesManager props = PropertiesManager.getPropertiesManager();
@@ -242,6 +264,7 @@ public class SokobanUI extends Pane {
 				@Override
 				public void handle(ActionEvent event) {
 					// TODO
+					intro.stop();
 					eventHandler.respondToNewGameRequest(levelNum+1);
 					eventHandler.respondToSelectLevelRequest(levelFile);
 					initSokobanUI();
@@ -539,15 +562,24 @@ public class SokobanUI extends Pane {
 			}*/
 			charPosition[0] -= 1;
 			levelData[charPosition[0]][charPosition[1]] = 4;
+			move.play();
 		} else if (levelData[charPosition[0] - 1][charPosition[1]] == 1) {
-
+			bump.play();
 		} else if (levelData[charPosition[0] - 1][charPosition[1]] == 2) {
 			if (levelData[charPosition[0] - 2][charPosition[1]] == 5 || levelData[charPosition[0] - 2][charPosition[1]] == 3) {
 				levelData[charPosition[0] - 2][charPosition[1]] = 2;
 				levelData[charPosition[0]][charPosition[1]] = 5;
 				charPosition[0] -= 1;
 				levelData[charPosition[0]][charPosition[1]] = 4;
+				move.play();
 			}
+			else {
+				bump.play();
+			}
+
+		}
+		else {
+			bump.play();
 		}
 		gameRenderer.repaint();
 		checkWin();checkLose();
@@ -567,15 +599,26 @@ public class SokobanUI extends Pane {
 			levelData[charPosition[0]][charPosition[1]] = 5;
 			charPosition[0] += 1;
 			levelData[charPosition[0]][charPosition[1]] = 4;
+			move.play();
 		} else if (levelData[charPosition[0] + 1][charPosition[1]] == 1) {
-
+			bump.play();
 		} else if (levelData[charPosition[0] + 1][charPosition[1]] == 2) {
 			if (levelData[charPosition[0] + 2][charPosition[1]] == 5 || levelData[charPosition[0] + 2][charPosition[1]] == 3) {
 				levelData[charPosition[0] + 2][charPosition[1]] = 2;
 				levelData[charPosition[0]][charPosition[1]] = 5;
 				charPosition[0] += 1;
 				levelData[charPosition[0]][charPosition[1]] = 4;
+				move.play();
 			}
+
+			else {
+				bump.play();
+			}
+
+		}
+
+		else {
+			bump.play();
 		}
 		gameRenderer.repaint();
 		checkWin();checkLose();
@@ -595,15 +638,24 @@ public class SokobanUI extends Pane {
 			levelData[charPosition[0]][charPosition[1]] = 5;
 			charPosition[1] -= 1;
 			levelData[charPosition[0]][charPosition[1]] = 4;
+			move.play();
 		} else if (levelData[charPosition[0]][charPosition[1] - 1] == 1) {
-
+			bump.play();
 		} else if (levelData[charPosition[0]][charPosition[1] - 1] == 2) {
 			if (levelData[charPosition[0]][charPosition[1] - 2] == 5 || levelData[charPosition[0]][charPosition[1] - 2] == 3) {
 				levelData[charPosition[0]][charPosition[1] - 2] = 2;
 				levelData[charPosition[0]][charPosition[1]] = 5;
 				charPosition[1] -= 1;
 				levelData[charPosition[0]][charPosition[1]] = 4;
+				move.play();
 			}
+			else {
+				bump.play();
+			}
+		}
+
+		else {
+			bump.play();
 		}
 		gameRenderer.repaint();
 		checkWin();checkLose();
@@ -623,15 +675,23 @@ public class SokobanUI extends Pane {
 			levelData[charPosition[0]][charPosition[1]] = 5;
 			charPosition[1] += 1;
 			levelData[charPosition[0]][charPosition[1]] = 4;
+			move.play();
 		} else if (levelData[charPosition[0]][charPosition[1] + 1] == 1) {
-
+			bump.play();
 		} else if (levelData[charPosition[0]][charPosition[1] + 1] == 2) {
 			if (levelData[charPosition[0]][charPosition[1] + 2] == 5 || levelData[charPosition[0]][charPosition[1] + 2] == 3) {
 				levelData[charPosition[0]][charPosition[1] + 2] = 2;
 				levelData[charPosition[0]][charPosition[1]] = 5;
 				charPosition[1] += 1;
 				levelData[charPosition[0]][charPosition[1]] = 4;
+				move.play();
 			}
+			else {
+				bump.play();
+			}
+		}
+		else {
+			bump.play();
 		}
 		gameRenderer.repaint();
 		checkWin();checkLose();
@@ -654,6 +714,7 @@ public class SokobanUI extends Pane {
 	}
 
 	public void loseDialog() {
+		lose.play();
 		arrowKeyHandler.enabled = false;
 		mouseHandler.enabled = false;
 		String options[] = new String[]{"OK"};
@@ -688,6 +749,7 @@ public class SokobanUI extends Pane {
 		});
 	}
 	public void winDialog() {
+		win.play();
 		arrowKeyHandler.enabled = false;
 		mouseHandler.enabled = false;
 		String options[] = new String[]{"OK"};
