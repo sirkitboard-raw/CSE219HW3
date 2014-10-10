@@ -14,27 +14,27 @@ public class ArrowKeyHandler{
 	public ArrowKeyHandler(SokobanUI initUI){
 		ui = initUI;
 	}
-
+	boolean enabled = true;
 	public void keyPressed(KeyEvent ke)
 	{
-		// GET THE KEY THAT WAS PRESSED IN ASSOCIATION WITH
-		// THIS METHOD CALL.
-		//int keyCode = ke.getKeyCode();
-		KeyCode keyCode = ke.getCode();
+		if(enabled) {// GET THE KEY THAT WAS PRESSED IN ASSOCIATION WITH
+			// THIS METHOD CALL.
+			//int keyCode = ke.getKeyCode();
+			KeyCode keyCode = ke.getCode();
 
-		// IS CONTROL-C PRESSED?
-		if (keyCode == KeyCode.LEFT) {
-			// A CHEAT TO DISPLAY THE SECRET WORD
-			ui.moveCharacterLeft();
-		}
-		else if(keyCode == KeyCode.RIGHT) {
-			ui.moveCharacterRight();
-		}
-		else if(keyCode == KeyCode.UP) {
-			ui.moveCharacterUp();
-		}
-		else if(keyCode == KeyCode.DOWN) {
-			ui.moveCharacterDown();
+			// IS CONTROL-C PRESSED?
+			if (keyCode == KeyCode.LEFT) {
+				// A CHEAT TO DISPLAY THE SECRET WORD
+				ui.moveCharacterLeft();
+			} else if (keyCode == KeyCode.RIGHT) {
+				ui.moveCharacterRight();
+			} else if (keyCode == KeyCode.UP) {
+				ui.moveCharacterUp();
+			} else if (keyCode == KeyCode.DOWN) {
+				ui.moveCharacterDown();
+			} else if (keyCode == KeyCode.U) {
+				ui.undo();
+			}
 		}
 	}
 }

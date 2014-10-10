@@ -101,7 +101,42 @@ public class SokobanEventHandler {
         noButton.setOnAction(e -> {
             dialogStage.close();
         });
-
     }
+
+	/*public void respondToBackRequest(Stage primaryStage) {
+		// ENGLIS IS THE DEFAULT
+		String options[] = new String[]{"Yes", "No"};
+		PropertiesManager props = PropertiesManager.getPropertiesManager();
+		options[0] = props.getProperty(SokobanPropertyType.DEFAULT_YES_TEXT);
+		options[1] = props.getProperty(SokobanPropertyType.DEFAULT_NO_TEXT);
+		String verifyExit = "Are you sure you want to go back to Main Menu?";
+
+		// FIRST MAKE SURE THE USER REALLY WANTS TO EXIT
+		Stage dialogStage = new Stage();
+		dialogStage.initModality(Modality.WINDOW_MODAL);
+		dialogStage.initOwner(primaryStage);
+		BorderPane exitPane = new BorderPane();
+		HBox optionPane = new HBox();
+		Button yesButton = new Button(options[0]);
+		Button noButton = new Button(options[1]);
+		optionPane.setSpacing(10.0);
+		optionPane.getChildren().addAll(yesButton, noButton);
+		Label exitLabel = new Label(verifyExit);
+		exitPane.setCenter(exitLabel);
+		exitPane.setBottom(optionPane);
+		Scene scene = new Scene(exitPane, 300, 100);
+		dialogStage.setScene(scene);
+		dialogStage.show();
+		// WHAT'S THE USER'S DECISION?
+		yesButton.setOnAction(e -> {
+			// YES, LET'S EXIT
+			ui.initSplashScreen();
+			dialogStage.close();
+		});
+		noButton.setOnAction(e -> {
+			dialogStage.close();
+		});
+
+	}*/
 
 }
