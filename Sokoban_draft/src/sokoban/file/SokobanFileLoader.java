@@ -1,6 +1,9 @@
 package sokoban.file;
 
 import java.io.*;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 import application.Main.SokobanPropertyType;
 import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
@@ -31,5 +34,75 @@ public class SokobanFileLoader {
 			}
 			return levelData;
 	}
-	
+
+	public void addToStats(int level, int time) {
+		try {
+			File file = new File("data/stats.sokstat");
+			FileInputStream fis = new FileInputStream(file.getPath());
+			byte[] buffer = new byte[(int)file.length()];
+			DataInputStream dis = new DataInputStream(fis);
+			dis.readFully(buffer);
+			ByteArrayInputStream bis = new ByteArrayInputStream(buffer);
+			dis = new DataInputStream(bis);
+			ArrayList<ArrayList<Integer>> levelStats= new ArrayList<ArrayList<Integer>>();
+			for(int i=0;i<7;i++) {
+				levelStats.add(new ArrayList<Integer>());
+			}
+			for(int i=0;i<7;i++) {
+				int num = dis.readInt();
+				for(int j=0;j<num;j++) {
+					levelStats.get(i).add(dis.readInt());
+				}
+			}
+			file.delete();
+			FileOutputStream fos = new FileOutputStream("data/stats.sokstat");
+			DataOutputStream dos = new DataOutputStream(fos);
+			levelStats.get(level-1).add(time);
+			for(int i=0;i<7;i++) {
+				dos.writeInt(levelStats.get(i).size());
+				for(int j=0;j<levelStats.get(i).size();j++) {
+					dos.writeInt(levelStats.get(i).get(j));
+				}
+			}
+			file = new File("data/statsHTML_base.html");
+			Scanner fileReader = new Scanner(file);
+			String htmlCode = "";
+			while(fileReader.hasNext()) {
+				htmlCode+= fileReader.nextLine() + "\n";
+			}
+			for(int i=0;i<7;i++) {
+				int wins = 0;
+				int played = levelStats.get(i).size();
+				htmlCode = htmlCode.replaceAll("PLACEHOLDER_"+(i+1)+"_PLAYED", played+"");
+				for(int j=0;j<played;j++) {
+					if(levelStats.get(i).get(j) > 0)
+						wins++;
+				}
+				htmlCode = htmlCode.replaceAll("PLACEHOLDER_"+(i+1)+"_WON", wins+"");
+				if(played!=0) {
+					htmlCode = htmlCode.replaceAll("PLACEHOLDER_" + (i + 1) + "_PERCENTAGE", (((double) wins / played)*100) + "%");
+				}
+				else {
+					htmlCode = htmlCode.replaceAll("PLACEHOLDER_" + (i + 1) + "_PERCENTAGE", "-");
+				}
+				if (wins!=0){
+					int fastest = Integer.MAX_VALUE;
+					for(int j=0;j<played;j++) {
+						if(levelStats.get(i).get(j) > 0 && levelStats.get(i).get(j) < fastest) {
+							fastest = levelStats.get(i).get(j);
+						}
+					}
+					htmlCode = htmlCode.replaceAll("PLACEHOLDER_" + (i + 1) + "_FASTEST", fastest + " seconds");
+				}
+			}
+
+			File logFile=new File("data/statsHTML.html");
+			BufferedWriter writer = new BufferedWriter(new FileWriter(logFile));
+			writer.write(htmlCode);
+			writer.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 }

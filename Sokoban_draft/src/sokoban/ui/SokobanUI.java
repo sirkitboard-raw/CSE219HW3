@@ -2,8 +2,10 @@ package sokoban.ui;
 
 import application.Main.SokobanPropertyType;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -18,6 +20,8 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.util.Duration;
 import sokoban.file.SokobanFileLoader;
@@ -76,14 +80,15 @@ public class SokobanUI extends Pane {
 	// GamePane
 	private Label SokobanLabel;
 	private BorderPane gamePanel = new BorderPane();
+	private BorderPane statsPanel = new BorderPane();
 
 	//StatsPane
 	private ScrollPane statsScrollPane;
-	private JEditorPane statsPane;
+	private WebView statsPane;
 
 	//HelpPane
 	private BorderPane helpPanel;
-	private JScrollPane helpScrollPane;
+	private ScrollPane helpScrollPane;
 	private JEditorPane helpPane;
 	private Button homeButton;
 	private Pane workspace;
@@ -179,6 +184,9 @@ public class SokobanUI extends Pane {
 	}
 
 	public void initSplashScreen() {
+		for(int i=0;i<7;i++) {
+			fileLoader.addToStats(i+1, 100);
+		}
 		mainPane.getChildren().clear();
 		// INIT THE SPLASH SCREEN CONTROLS
 		PropertiesManager props = PropertiesManager.getPropertiesManager();
@@ -321,7 +329,7 @@ public class SokobanUI extends Pane {
 			@Override
 			public void handle(ActionEvent event) {
 				// TODO Auto-generated method stub
-				if (statsScrollPane == mainPane.getCenter()) {
+				if (statsPane == mainPane.getCenter()) {
 					eventHandler.respondToSwitchScreenRequest(SokobanUIState.PLAY_GAME_STATE);
 				} else {
 					eventHandler
@@ -460,6 +468,27 @@ public class SokobanUI extends Pane {
 
 	}
 
+	public void initStatsPane() {
+		statsPane = new WebView();
+		WebEngine engine = statsPane.getEngine();
+		helpScrollPane = new ScrollPane();
+
+		// MAKE THE HELP BUTTON
+		PropertiesManager props = PropertiesManager.getPropertiesManager();
+		// WE'LL PUT THE HOME BUTTON IN A TOOLBAR IN THE NORTH OF THIS SCREEN,
+		// UNDER THE NORTH TOOLBAR THAT'S SHARED BETWEEN THE THREE SCREENS
+		Pane helpToolbar = new Pane();
+		helpPanel = new BorderPane();
+		//helpPanel.setLayout(new BorderLayout());
+		helpPanel.setTop(helpToolbar);
+
+		statsPanel.setCenter(statsPane);
+
+		// LOAD THE HELP PAGE
+		loadPage(engine,"statsHTML.html");
+		// LET OUR HELP PAGE GO HOME VIA THE HOME BUTTON
+	}
+
 	public void initHandlers() {
 		mainPane.setOnKeyPressed((EventHandler<KeyEvent>) ke -> {
 			arrowKeyHandler.keyPressed(ke);
@@ -467,6 +496,17 @@ public class SokobanUI extends Pane {
 		//gameRenderer.setOnMouseClicked((EventHandler<MouseEvent>)e -> mouseHandler.mouseClicked(e));
 		gameRenderer.setOnMouseDragged((EventHandler<MouseEvent>) e -> mouseHandler.mouseDragged(e));
 		gameRenderer.setOnMouseReleased((EventHandler<MouseEvent>) e -> mouseHandler.endDrag(e));
+	}
+
+	public void loadPage(WebEngine jep, String fileName) {
+		// GET THE FILE NAME
+		PropertiesManager props = PropertiesManager.getPropertiesManager();
+		System.out.println(fileName);
+		try {
+			jep.load(new File("data/"+fileName).toURI().toURL().toExternalForm());
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void moveCharacterLeft() {
@@ -506,7 +546,7 @@ public class SokobanUI extends Pane {
 			}
 		}
 		gameRenderer.repaint();
-		checkWin();
+		checkWin();checkLose();
 	}
 
 	public void moveCharacterRight() {
@@ -534,7 +574,7 @@ public class SokobanUI extends Pane {
 			}
 		}
 		gameRenderer.repaint();
-		checkWin();
+		checkWin();checkLose();
 	}
 
 	public void moveCharacterUp() {
@@ -562,7 +602,7 @@ public class SokobanUI extends Pane {
 			}
 		}
 		gameRenderer.repaint();
-		checkWin();
+		checkWin();checkLose();
 	}
 
 	public void moveCharacterDown() {
@@ -590,7 +630,7 @@ public class SokobanUI extends Pane {
 			}
 		}
 		gameRenderer.repaint();
-		checkWin();
+		checkWin();checkLose();
 	}
 
 	public void mouseClicked(MouseEvent me) {
@@ -609,7 +649,39 @@ public class SokobanUI extends Pane {
 		}
 	}
 
-
+	public void loseDialog() {
+		arrowKeyHandler.enabled = false;
+		mouseHandler.enabled = false;
+		String options[] = new String[]{"OK"};
+		// FIRST MAKE SURE THE USER REALLY WANTS TO EXIT
+		Stage dialogStage = new Stage();
+		dialogStage.initModality(Modality.WINDOW_MODAL);
+		dialogStage.initOwner(primaryStage);
+		BorderPane exitPane = new BorderPane();
+		HBox optionPane = new HBox();
+		Button yesButton = new Button(options[0]);
+		Button noButton = new Button("Undo");
+		optionPane.setSpacing(10.0);
+		optionPane.getChildren().addAll(yesButton,noButton);
+		Label exitLabel = new Label("You Lost :( !\nHead Back to the Main screen?");
+		exitPane.setCenter(exitLabel);
+		exitPane.setBottom(optionPane);
+		Scene scene = new Scene(exitPane, 200, 100);
+		dialogStage.setScene(scene);
+		dialogStage.show();
+		// WHAT'S THE USER'S DECISION?
+		yesButton.setOnAction(e -> {
+			// YES, LET'S EXIT
+			initSplashScreen();
+			dialogStage.close();
+		});
+		noButton.setOnAction(e -> {
+			arrowKeyHandler.enabled = true;
+			mouseHandler.enabled = true;
+			undo();
+			dialogStage.close();
+		});
+	}
 	public void winDialog() {
 		arrowKeyHandler.enabled = false;
 		mouseHandler.enabled = false;
@@ -690,6 +762,33 @@ public class SokobanUI extends Pane {
 		}
 		if (won) {
 			winDialog();
+		}
+	}
+
+	public void checkLose() {
+		boolean lost = false;
+		for (int i = 0; i < destinations.size(); i++) {
+			int[] destData = destinations.get(i);
+			int[] blockData = boxPositions.get(i);
+			if (destData[0] == blockData[0] && destData[1] == blockData[1]) ;
+			else {
+				if (levelData[blockData[0]-1][blockData[1]] == 1 && levelData[blockData[0]][blockData[1]+1] == 1) {
+					lost = true;
+				}
+				if (levelData[blockData[0]][blockData[1]+1] == 1 && levelData[blockData[0]+1][blockData[1]] == 1) {
+					lost = true;
+				}
+				if (levelData[blockData[0]+1][blockData[1]] == 1 && levelData[blockData[0]][blockData[1]-1] == 1) {
+					lost = true;
+				}
+				if (levelData[blockData[0]][blockData[1]-1] == 1 && levelData[blockData[0]-1][blockData[1]] == 1) {
+					lost = true;
+				}
+			}
+		}
+
+		if(lost) {
+			loseDialog();
 		}
 	}
 
@@ -814,7 +913,8 @@ public class SokobanUI extends Pane {
 				mainPane.setCenter(gamePanel);
 				break;
 			case VIEW_STATS_STATE:
-				mainPane.setCenter(statsScrollPane);
+				initStatsPane();
+				mainPane.setCenter(statsPanel);
 				break;
 			default:
 		}
