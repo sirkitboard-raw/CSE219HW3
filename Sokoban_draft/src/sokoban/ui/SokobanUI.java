@@ -25,6 +25,7 @@ import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.util.Duration;
 import sokoban.file.SokobanFileLoader;
+import sokoban.game.SokobanGameData;
 import sokoban.game.SokobanGameStateManager;
 import properties_manager.PropertiesManager;
 import javafx.event.ActionEvent;
@@ -129,7 +130,6 @@ public class SokobanUI extends Pane {
 
 	private static final Integer STARTTIMESECONDS = 0;
 	private Timeline timeline;
-	private Label timerLabel = new Label();
 	private IntegerProperty timeSeconds = new SimpleIntegerProperty(STARTTIMESECONDS);
 
 	SokobanGameStateManager gsm;
@@ -158,6 +158,10 @@ public class SokobanUI extends Pane {
 		return gsm;
 	}
 
+	public SokobanFileLoader getFileLoader() {
+		return fileLoader;
+	}
+
 	public SokobanDocumentManager getDocManager() {
 		return docManager;
 	}
@@ -184,9 +188,6 @@ public class SokobanUI extends Pane {
 	}
 
 	public void initSplashScreen() {
-		for(int i=0;i<7;i++) {
-			fileLoader.addToStats(i+1, 100);
-		}
 		mainPane.getChildren().clear();
 		// INIT THE SPLASH SCREEN CONTROLS
 		PropertiesManager props = PropertiesManager.getPropertiesManager();
@@ -226,6 +227,7 @@ public class SokobanUI extends Pane {
 			// GET THE LIST OF LEVEL OPTIONS
 			String level = levels.get(i);
 			String levelFile = levelFiles.get(i);
+			int levelNum = i;
 			String levelImageName = levelImages.get(i);
 			Image levelImage = loadImage(levelImageName);
 			ImageView levelImageView = new ImageView(levelImage);
@@ -240,7 +242,7 @@ public class SokobanUI extends Pane {
 				@Override
 				public void handle(ActionEvent event) {
 					// TODO
-					eventHandler.respondToNewGameRequest();
+					eventHandler.respondToNewGameRequest(levelNum+1);
 					eventHandler.respondToSelectLevelRequest(levelFile);
 					initSokobanUI();
 				}
@@ -353,7 +355,6 @@ public class SokobanUI extends Pane {
 		});
 		undoButton.setStyle("-fx-background-color: transparent");
 		// MAKE AND INIT THE EXIT BUTTON
-
 		// MAKE THE BUTTON
 		timeButton = new Button();
 		timeButton.setPadding(marginlessInsets);
@@ -433,7 +434,8 @@ public class SokobanUI extends Pane {
 		PropertiesManager props = PropertiesManager.getPropertiesManager();
 		try {
 			levelData = fileLoader.loadLevel(level);
-
+			destinations.clear();
+			boxPositions.clear();
 			numCols = levelData.length;
 			numRows = levelData[0].length;
 			for (int i = 0; i < levelData.length; i++) {
@@ -459,6 +461,8 @@ public class SokobanUI extends Pane {
 			boxPositionsStack = new Stack<int[][]>();
 			gameRenderer = new GameRenderer();
 			gamePanel.setCenter(gameRenderer);
+			arrowKeyHandler.enabled = true;
+			mouseHandler.enabled = true;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -679,6 +683,7 @@ public class SokobanUI extends Pane {
 			arrowKeyHandler.enabled = true;
 			mouseHandler.enabled = true;
 			undo();
+			timeline.play();
 			dialogStage.close();
 		});
 	}
@@ -761,6 +766,11 @@ public class SokobanUI extends Pane {
 			}
 		}
 		if (won) {
+			timeline.stop();
+			SokobanGameData data = gsm.getGameInProgress();
+			data.giveUp();
+			int time = (int)data.getTimeOfGame();
+			fileLoader.addToStats(data.getLevel(), time);
 			winDialog();
 		}
 	}
@@ -788,6 +798,12 @@ public class SokobanUI extends Pane {
 		}
 
 		if(lost) {
+			timeline.pause();
+			SokobanGameData data = gsm.getGameInProgress();
+			data.giveUp();
+			int time = (int)data.getTimeOfGame();
+			time*=-1;
+			fileLoader.addToStats(data.getLevel(), time);
 			loseDialog();
 		}
 	}
@@ -802,7 +818,7 @@ public class SokobanUI extends Pane {
 
 		public GameRenderer() {
 			this.setWidth(800);
-			this.setHeight(800);
+			this.setHeight(720);
 			cellHeight = this.getHeight() / numRows;
 			cellWidth = this.getWidth() / numCols;
 			cellWidth = (cellHeight < cellWidth) ? cellHeight : cellWidth;
@@ -855,7 +871,7 @@ public class SokobanUI extends Pane {
 				x += cellWidth;
 			}
 			x = (int) ((this.getWidth() - (numCols * cellWidth)) / 2);
-			y = 0;
+			y = (int) ((this.getHeight() - (numRows * cellHeight)) / 2);
 			for (int i = 0; i < destinations.size(); i++) {
 				int[] data = destinations.get(i);
 				if (levelData[data[0]][data[1]] == 5) {

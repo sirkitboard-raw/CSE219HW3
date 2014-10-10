@@ -21,10 +21,12 @@ public class SokobanGameData {
     final long MILLIS_IN_A_MINUTE = 1000 * 60;
     final long MILLIS_IN_AN_HOUR = 1000 * 60 * 60;
 
+	private int level;
     /*
      * Construct this object when a game begins.
      */
     public SokobanGameData(int level) {
+		this.level = level;
         startTime = new GregorianCalendar();
         endTime = null;
     }
@@ -35,6 +37,10 @@ public class SokobanGameData {
      *
      * @return The time of the game in milliseconds.
      */
+	public int getLevel() {
+		return level;
+	}
+
     public long getTimeOfGame() {
         // IF THE GAME ISN'T OVER YET, THERE IS NO POINT IN CONTINUING
         if (endTime == null) {
@@ -47,6 +53,7 @@ public class SokobanGameData {
 
         // CALC THE DIFF AND RETURN IT
         long diff = endTimeInMillis - startTimeInMillis;
+		diff/=1000;
         return diff;
     }
 

@@ -12,6 +12,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import application.Main.SokobanPropertyType;
 import properties_manager.PropertiesManager;
+import sokoban.game.SokobanGameData;
 import xml_utilities.InvalidXMLFileFormatException;
 import sokoban.file.SokobanFileLoader;
 import sokoban.game.SokobanGameStateManager;
@@ -44,9 +45,9 @@ public class SokobanEventHandler {
     /**
      * This method responds to when the user presses the new game method.
      */
-    public void respondToNewGameRequest() {
+    public void respondToNewGameRequest(int level) {
         SokobanGameStateManager gsm = ui.getGSM();
-        gsm.startNewGame();
+        gsm.startNewGame(level);
     }
 
 	public void respondToSelectLevelRequest(String level) {
@@ -96,6 +97,10 @@ public class SokobanEventHandler {
         yesButton.setOnAction(e -> {
             // YES, LET'S EXIT
             ui.initSplashScreen();
+			SokobanGameData data = ui.getGSM().getGameInProgress();
+			data.giveUp();
+			int time = (int)data.getTimeOfGame();
+			ui.getFileLoader().addToStats(data.getLevel(), time);
 			dialogStage.close();
         });
         noButton.setOnAction(e -> {

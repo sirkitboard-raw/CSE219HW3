@@ -94,6 +94,7 @@ public class SokobanFileLoader {
 					}
 					htmlCode = htmlCode.replaceAll("PLACEHOLDER_" + (i + 1) + "_FASTEST", fastest + " seconds");
 				}
+				else htmlCode = htmlCode.replaceAll("PLACEHOLDER_" + (i + 1) + "_FASTEST", "-");
 			}
 
 			File logFile=new File("data/statsHTML.html");
