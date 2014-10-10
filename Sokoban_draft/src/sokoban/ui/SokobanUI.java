@@ -13,6 +13,8 @@ import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
 
 import javafx.scene.canvas.*;
+import javafx.scene.input.MouseDragEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import sokoban.file.SokobanFileLoader;
 import sokoban.game.SokobanGameData;
@@ -106,8 +108,8 @@ public class SokobanUI extends Pane {
 	//Level Data;
 	private int numCols;
 	private int numRows;
-	double cellWidth;
-	double cellHeight;
+	public double cellWidth;
+	public double cellHeight;
 	private int[][] levelData;
 	private int[] charPosition = new int[2];
 	private ArrayList<int[]> boxPositions = new ArrayList<int[]>();
@@ -120,6 +122,7 @@ public class SokobanUI extends Pane {
 
 	//Handlers
 	ArrowKeyHandler arrowKeyHandler;
+	MouseHandler mouseHandler;
 
 
     SokobanGameStateManager gsm;
@@ -131,6 +134,7 @@ public class SokobanUI extends Pane {
         docManager = new SokobanDocumentManager(this);
 		fileLoader = new SokobanFileLoader(this);
 		arrowKeyHandler = new ArrowKeyHandler(this);
+		mouseHandler = new MouseHandler(this);
         initMainPane();
         initSplashScreen();
     }
@@ -226,9 +230,9 @@ public class SokobanUI extends Pane {
 				@Override
 				public void handle(ActionEvent event) {
 					// TODO
-					initSokobanUI();
 					gsm.startNewGame();
 					eventHandler.respondToSelectLevelRequest(levelFile);
+					initSokobanUI();
 				}
 			});
             // TODO
@@ -440,6 +444,9 @@ public class SokobanUI extends Pane {
 		mainPane.setOnKeyPressed((EventHandler<KeyEvent>)ke -> {
 			arrowKeyHandler.keyPressed(ke);
 		});
+		//gameRenderer.setOnMouseClicked((EventHandler<MouseEvent>)e -> mouseHandler.mouseClicked(e));
+		gameRenderer.setOnMouseDragged((EventHandler<MouseEvent>)e -> mouseHandler.mouseDragged(e));
+		gameRenderer.setOnMouseReleased((EventHandler<MouseEvent>)e -> mouseHandler.endDrag(e));
 	}
 
 	public void moveCharacterLeft() {
@@ -536,6 +543,50 @@ public class SokobanUI extends Pane {
 		}
 		gameRenderer.repaint();
 		checkWin();
+	}
+
+	public void mouseClicked(MouseEvent me) {
+		int gridx =(int)(me.getX());
+		gridx/=cellWidth;
+		int gridy =(int)(me.getY());
+		gridy /= cellHeight;
+		if(charPosition[0] == (gridx+1) && charPosition[1] == gridy) {
+			moveCharacterLeft();
+		}
+		else if(charPosition[0] == (gridx-1) && charPosition[1] == gridy) {
+			moveCharacterRight();
+		}
+		else if(charPosition[0] == (gridx) && charPosition[1] == gridy+1) {
+			moveCharacterUp();
+		}
+		else if(charPosition[0] == (gridx) && charPosition[1] == gridy-1) {
+			moveCharacterDown();
+		}
+	}
+
+	public void mouseDragged(MouseEvent me1, MouseEvent me2) {
+		int gridx1 =(int)(me1.getX());
+		gridx1/=cellWidth;
+		int gridy1 =(int)(me1.getY());
+		gridy1 /= cellHeight;
+		int gridx2 =(int)(me2.getX());
+		gridx2/=cellWidth;
+		int gridy2 =(int)(me2.getY());
+		gridy2 /= cellHeight;
+		if(charPosition[0] == gridx1 && charPosition[1] == gridy1) {
+			if(charPosition[0] == (gridx2+1) && charPosition[1] == gridy2) {
+				moveCharacterLeft();
+			}
+			else if(charPosition[0] == (gridx2-1) && charPosition[1] == gridy2) {
+				moveCharacterRight();
+			}
+			else if(charPosition[0] == (gridx2) && charPosition[1] == gridy2+1) {
+				moveCharacterUp();
+			}
+			else if(charPosition[0] == (gridx2) && charPosition[1] == gridy2-1) {
+				moveCharacterDown();
+			}
+		}
 	}
 
 	public void checkWin() {
