@@ -1,27 +1,19 @@
 package sokoban.ui;
 
-import application.Main;
 import application.Main.SokobanPropertyType;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Stack;
 
 import javax.swing.JEditorPane;
-import javax.swing.text.Document;
-import javax.swing.text.html.HTMLDocument;
 
 import javafx.scene.canvas.*;
-import javafx.scene.input.MouseDragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import sokoban.file.SokobanFileLoader;
-import sokoban.game.SokobanGameData;
 import sokoban.game.SokobanGameStateManager;
-import application.Main.SokobanPropertyType;
 import properties_manager.PropertiesManager;
-import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -29,14 +21,11 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import javax.swing.JScrollPane;
 
@@ -69,10 +58,10 @@ public class SokobanUI extends Pane {
 
     // NorthToolBar
     private HBox northToolbar;
-    private Button gameButton;
+    private Button backButton;
     private Button statsButton;
-    private Button helpButton;
-    private Button exitButton;
+    private Button undoButton;
+    private Button timeButton;
 
     // GamePane
     private Label SokobanLabel;
@@ -114,12 +103,11 @@ public class SokobanUI extends Pane {
 	private int[] charPosition = new int[2];
 	private ArrayList<int[]> boxPositions = new ArrayList<int[]>();
 	private ArrayList<int[]> destinations = new ArrayList<int[]>();
-
-
 	//Game Renderer
 	GameRenderer gameRenderer;
 	private GraphicsContext gc;
-
+	private Stack<int[]> charMoves;
+	private Stack<int[][]> boxPositionsStack;
 	//Handlers
 	ArrowKeyHandler arrowKeyHandler;
 	MouseHandler mouseHandler;
@@ -177,7 +165,7 @@ public class SokobanUI extends Pane {
     }
 
     public void initSplashScreen() {
-
+		mainPane.getChildren().clear();
         // INIT THE SPLASH SCREEN CONTROLS
         PropertiesManager props = PropertiesManager.getPropertiesManager();
         String splashScreenImagePath = props
@@ -230,7 +218,7 @@ public class SokobanUI extends Pane {
 				@Override
 				public void handle(ActionEvent event) {
 					// TODO
-					gsm.startNewGame();
+					eventHandler.respondToNewGameRequest();
 					eventHandler.respondToSelectLevelRequest(levelFile);
 					initSokobanUI();
 				}
@@ -295,65 +283,66 @@ public class SokobanUI extends Pane {
         northToolbar.setSpacing(10.0);
 
         // MAKE AND INIT THE GAME BUTTON
-        gameButton = initToolbarButton(northToolbar,
-                SokobanPropertyType.GAME_IMG_NAME);
-		//gameButton.setTooltip(new Tooltip(SokobanPropertyType.GAME_TOOLTIP.toString()));
-        //setTooltip(gameButton, SokobanPropertyType.GAME_TOOLTIP);
-        gameButton.setOnAction(new EventHandler<ActionEvent>() {
+        backButton = initToolbarButton(northToolbar,
+                SokobanPropertyType.BACK_BUTTON);
+		backButton.setStyle("-fx-background-color: transparent");
+		//backButton.setTooltip(new Tooltip(SokobanPropertyType.GAME_TOOLTIP.toString()));
+        //setTooltip(backButton, SokobanPropertyType.GAME_TOOLTIP);
+        backButton.setOnAction(new EventHandler<ActionEvent>() {
 
-            @Override
-            public void handle(ActionEvent event) {
-                // TODO Auto-generated method stub
-                eventHandler
-                        .respondToSwitchScreenRequest(SokobanUIState.PLAY_GAME_STATE);
-            }
-        });
+			@Override
+			public void handle(ActionEvent event) {
+				// TODO Auto-generated method stub
+				eventHandler.respondToExitRequest(primaryStage);
+			}
+		});
 
         // MAKE AND INIT THE STATS BUTTON
         statsButton = initToolbarButton(northToolbar,
-                SokobanPropertyType.STATS_IMG_NAME);
+                SokobanPropertyType.STAT_BUTTON);
         //setTooltip(statsButton, SokobanPropertyType.STATS_TOOLTIP);
-
+		statsButton.setStyle("-fx-background-color: transparent");
         statsButton.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
                 // TODO Auto-generated method stub
-                eventHandler
-                        .respondToSwitchScreenRequest(SokobanUIState.VIEW_STATS_STATE);
+                if(statsScrollPane == mainPane.getCenter()){
+					eventHandler.respondToSwitchScreenRequest(SokobanUIState.PLAY_GAME_STATE);
+				}
+				else {
+					eventHandler
+							.respondToSwitchScreenRequest(SokobanUIState.VIEW_STATS_STATE);
+				}
             }
 
         });
         // MAKE AND INIT THE HELP BUTTON
-        helpButton = initToolbarButton(northToolbar,
-                SokobanPropertyType.HELP_IMG_NAME);
-        //setTooltip(helpButton, SokobanPropertyType.HELP_TOOLTIP);
-        helpButton.setOnAction(new EventHandler<ActionEvent>() {
+        undoButton = initToolbarButton(northToolbar,
+                SokobanPropertyType.UNDO_BUTTON);
+        //setTooltip(undoButton, SokobanPropertyType.HELP_TOOLTIP);
+        undoButton.setOnAction(new EventHandler<ActionEvent>() {
 
-            @Override
-            public void handle(ActionEvent event) {
-                // TODO Auto-generated method stub
-                eventHandler
-                        .respondToSwitchScreenRequest(SokobanUIState.VIEW_HELP_STATE);
-            }
+			@Override
+			public void handle(ActionEvent event) {
+				// TODO Auto-generated method stub
+				if(charMoves.isEmpty()) {
+					errorHandler.processError(SokobanPropertyType.ERROR_NO_MORE_UNDOS);
+				}
+				else {
+					undo();
+				}
+			}
 
-        });
-
+		});
+		undoButton.setStyle("-fx-background-color: transparent");
         // MAKE AND INIT THE EXIT BUTTON
-        exitButton = initToolbarButton(northToolbar,
-                SokobanPropertyType.EXIT_IMG_NAME);
+        timeButton = initToolbarButton(northToolbar,
+                SokobanPropertyType.TIME_BUTTON);
         //setTooltip(exitButton, SokobanPropertyType.EXIT_TOOLTIP);
-        exitButton.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent event) {
-                // TODO Auto-generated method stub
-                eventHandler.respondToExitRequest(primaryStage);
-            }
-
-        });
-
+		timeButton.setStyle("-fx-background-color: transparent");
         // AND NOW PUT THE NORTH TOOLBAR IN THE FRAME
+		northToolbar.setStyle("-fx-background-color: #3b3c51");
         mainPane.setTop(northToolbar);
         //mainPane.getChildren().add(northToolbar);
     }
@@ -427,8 +416,11 @@ public class SokobanUI extends Pane {
 					}
 					System.out.print(levelData[i][j] + " ");
 				}
+
 				System.out.println();
 			}
+			charMoves = new Stack<int[]>();
+			boxPositionsStack = new Stack<int[][]>();
 			gameRenderer = new GameRenderer();
 			gamePanel.setCenter(gameRenderer);
 		} catch (FileNotFoundException e) {
@@ -450,6 +442,15 @@ public class SokobanUI extends Pane {
 	}
 
 	public void moveCharacterLeft() {
+		int[][] temp = new int[numCols][numRows];
+		for(int i=0;i<numCols;i++) {
+			for(int j=0;j<numRows;j++) {
+				temp[i][j] = levelData[i][j];
+			}
+		}
+		int[] temp2 = {charPosition[0],charPosition[1]};
+		charMoves.push(temp2);
+		boxPositionsStack.push(temp);
 		if(levelData[charPosition[0]-1][charPosition[1]] == 5 || levelData[charPosition[0]-1][charPosition[1]] == 3 ) {
 			levelData[charPosition[0]][charPosition[1]] = 5;
 			/*for(int i=0;i<cellWidth;i++) {
@@ -483,6 +484,15 @@ public class SokobanUI extends Pane {
 	}
 
 	public void moveCharacterRight() {
+		int[][] temp = new int[numCols][numRows];
+		for(int i=0;i<numCols;i++) {
+			for(int j=0;j<numRows;j++) {
+				temp[i][j] = levelData[i][j];
+			}
+		}
+		int[] temp2 = {charPosition[0],charPosition[1]};
+		charMoves.push(temp2);
+		boxPositionsStack.push(temp);
 		if(levelData[charPosition[0]+1][charPosition[1]] == 5 || levelData[charPosition[0]+1][charPosition[1]] == 3 ) {
 			levelData[charPosition[0]][charPosition[1]] = 5;
 			charPosition[0] +=1;
@@ -504,6 +514,15 @@ public class SokobanUI extends Pane {
 	}
 
 	public void moveCharacterUp() {
+		int[][] temp = new int[numCols][numRows];
+		for(int i=0;i<numCols;i++) {
+			for(int j=0;j<numRows;j++) {
+				temp[i][j] = levelData[i][j];
+			}
+		}
+		int[] temp2 = {charPosition[0],charPosition[1]};
+		charMoves.push(temp2);
+		boxPositionsStack.push(temp);
 		if(levelData[charPosition[0]][charPosition[1]-1] == 5  || levelData[charPosition[0]][charPosition[1]-1] == 3) {
 			levelData[charPosition[0]][charPosition[1]] = 5;
 			charPosition[1] -=1;
@@ -525,6 +544,15 @@ public class SokobanUI extends Pane {
 	}
 
 	public void moveCharacterDown() {
+		int[][] temp = new int[numCols][numRows];
+		for(int i=0;i<numCols;i++) {
+			for(int j=0;j<numRows;j++) {
+				temp[i][j] = levelData[i][j];
+			}
+		}
+		int[] temp2 = {charPosition[0],charPosition[1]};
+		charMoves.push(temp2);
+		boxPositionsStack.push(temp);
 		if(levelData[charPosition[0]][charPosition[1]+1] == 5  || levelData[charPosition[0]][charPosition[1]+1] == 3 ) {
 			levelData[charPosition[0]][charPosition[1]] = 5;
 			charPosition[1] +=1;
@@ -566,6 +594,7 @@ public class SokobanUI extends Pane {
 
 	public void mouseDragged(MouseEvent me1, MouseEvent me2) {
 		int gridx1 =(int)(me1.getX());
+		gridx1/=cellWidth;
 		gridx1/=cellWidth;
 		int gridy1 =(int)(me1.getY());
 		gridy1 /= cellHeight;
@@ -688,15 +717,21 @@ public class SokobanUI extends Pane {
 				}
 			}
 		}
-		/*public void drawCharacter(int x, int y) {
+		public void drawCharacter(int x, int y) {
 			gc.drawImage(sokobanImage,x,y, cellWidth, cellHeight);
-		}*/
+		}
 	}
 
     public Image loadImage(String imageName) {
         Image img = new Image(ImgPath + imageName);
         return img;
     }
+
+	public void undo() {
+		levelData = boxPositionsStack.pop().clone();
+		charPosition = charMoves.pop().clone();
+		gameRenderer.repaint();
+	}
 
     /**
      * This function selects the UI screen to display based on the uiScreen

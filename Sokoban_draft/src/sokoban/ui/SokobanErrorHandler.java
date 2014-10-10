@@ -43,11 +43,13 @@ public class SokobanErrorHandler {
         VBox vbox = new VBox();
         vbox.setSpacing(10.0);
         Label errLabel = new Label(errorFeedbackText);
-        Button errButton = new Button("confirm");
+        Button errButton = new Button("OK");
         vbox.getChildren().addAll(errLabel, errButton);
-
-        Scene scene = new Scene(vbox, 50, 30);
+        Scene scene = new Scene(vbox, 200, 100);
         dialogStage.setScene(scene);
         dialogStage.show();
+		errButton.setOnAction(e -> {
+			dialogStage.close();
+		});
     }
 }

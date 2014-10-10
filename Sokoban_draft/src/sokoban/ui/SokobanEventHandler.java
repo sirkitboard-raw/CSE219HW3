@@ -58,6 +58,9 @@ public class SokobanEventHandler {
      *
      *
      */
+
+
+
     public void respondToExitRequest(Stage primaryStage) {
         // ENGLIS IS THE DEFAULT
         String options[] = new String[]{"Yes", "No"};
@@ -86,13 +89,14 @@ public class SokobanEventHandler {
         Label exitLabel = new Label(verifyExit);
         exitPane.setCenter(exitLabel);
         exitPane.setBottom(optionPane);
-        Scene scene = new Scene(exitPane, 50, 100);
+        Scene scene = new Scene(exitPane, 200, 100);
         dialogStage.setScene(scene);
         dialogStage.show();
         // WHAT'S THE USER'S DECISION?
         yesButton.setOnAction(e -> {
             // YES, LET'S EXIT
-            System.exit(0);
+            ui.initSplashScreen();
+			dialogStage.close();
         });
         noButton.setOnAction(e -> {
             dialogStage.close();

@@ -10,6 +10,10 @@
         <property name="WINDOW_HEIGHT"              value="820"></property>
         <property name="SPLASH_SCREEN_IMAGE_NAME"   value="SokobanSplashScreen.png"></property>
         <property name="DATA_PATH"                  value="./data/"></property>
+        <property name="BACK_BUTTON"                value="back.png"></property>
+        <property name="STAT_BUTTON"                value="stats.png"></property>
+        <property name="UNDO_BUTTON"                value="undo.png"></property>
+        <property name="TIME_BUTTON"                value="time.png"></property>
         <property name="IMG_PATH"                   value="./images/"></property>
         <property name="LETTERS_FONT_FAMILY"        value="monospaced"></property>
         <property name="LETTERS_FONT_SIZE"          value="24"></property>
@@ -18,6 +22,7 @@
         <property name="DEFAULT_EXIT_TEXT"          value="Are you sure you wish to Quit?"></property>
         <property name="ERROR_LEVEL_NOT_FOUND"      value="Level doesn't exist"></property>
         <property name="ERROR_INVALID_FILE"         value="Invalid File"></property>
+        <property name="ERROR_NO_MORE_UNDOES"       value="No more undos"></property>
     </property_list>
     <property_options_list>
         <property_options name="LEVEL_OPTIONS">
