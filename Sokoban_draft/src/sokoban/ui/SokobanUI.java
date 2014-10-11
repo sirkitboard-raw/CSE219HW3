@@ -297,7 +297,7 @@ public class SokobanUI extends Pane {
 			label.setContentDisplay(ContentDisplay.BOTTOM);
 			label.setStyle("-fx-font-size:20;-fx-font-weight:bold");
 			if(wins[i]==0) {
-				levelButton.setDisable(true);
+				//levelButton.setDisable(true);
 			}
 			levelImageView.fitWidthProperty().bind(levelButton.maxWidthProperty());
 			levelImageView.fitHeightProperty().bind(levelButton.maxHeightProperty());
