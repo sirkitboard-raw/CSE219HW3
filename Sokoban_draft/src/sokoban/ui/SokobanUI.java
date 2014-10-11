@@ -16,11 +16,14 @@ import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.geometry.HPos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.media.AudioClip;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
@@ -128,7 +131,7 @@ public class SokobanUI extends Pane {
 	//Handlers
 	ArrowKeyHandler arrowKeyHandler;
 	MouseHandler mouseHandler;
-
+	private Integer level;
 	private static final Integer STARTTIMESECONDS = 0;
 	private Timeline timeline;
 	private IntegerProperty timeSeconds = new SimpleIntegerProperty(STARTTIMESECONDS);
@@ -216,7 +219,6 @@ public class SokobanUI extends Pane {
 		String splashScreenImagePath = props
 				.getProperty(SokobanPropertyType.SPLASH_SCREEN_IMAGE_NAME);
 		props.addProperty(SokobanPropertyType.INSETS, "5");
-		String str = props.getProperty(SokobanPropertyType.INSETS);
 
 		splashScreenPane = new StackPane();
 
@@ -263,17 +265,13 @@ public class SokobanUI extends Pane {
 
 				@Override
 				public void handle(ActionEvent event) {
-					// TODO
+					SokobanUI.this.level = levelNum;
 					intro.stop();
 					eventHandler.respondToNewGameRequest(levelNum+1);
 					eventHandler.respondToSelectLevelRequest(levelFile);
 					initSokobanUI();
 				}
 			});
-			// TODO
-			//levelSelectionPane.getChildren().add(levelButton);
-			// TODO: enable only the first level
-			//levelButton.setDisable(true);
 			levelButton.setMinHeight(160);
 			levelButton.setMinHeight(160);
 			levelButton.setMaxWidth(160);
@@ -331,7 +329,7 @@ public class SokobanUI extends Pane {
 
 		// MAKE AND INIT THE GAME BUTTON
 		backButton = initToolbarButton(northToolbar,
-				SokobanPropertyType.BACK_BUTTON);
+				SokobanPropertyType.HOME_BUTTON);
 		backButton.setStyle("-fx-background-color: transparent");
 		//backButton.setTooltip(new Tooltip(SokobanPropertyType.GAME_TOOLTIP.toString()));
 		//setTooltip(backButton, SokobanPropertyType.GAME_TOOLTIP);
@@ -339,7 +337,7 @@ public class SokobanUI extends Pane {
 
 			@Override
 			public void handle(ActionEvent event) {
-				// TODO Auto-generated method stub
+
 				eventHandler.respondToExitRequest(primaryStage);
 			}
 		});
@@ -353,10 +351,12 @@ public class SokobanUI extends Pane {
 
 			@Override
 			public void handle(ActionEvent event) {
-				// TODO Auto-generated method stub
-				if (statsPane == mainPane.getCenter()) {
+
+				if (statsPanel == mainPane.getCenter()) {
+					statsButton.setGraphic(new ImageView(loadImage("stats.png")));
 					eventHandler.respondToSwitchScreenRequest(SokobanUIState.PLAY_GAME_STATE);
 				} else {
+					statsButton.setGraphic(new ImageView(loadImage("back.png")));
 					eventHandler
 							.respondToSwitchScreenRequest(SokobanUIState.VIEW_STATS_STATE);
 				}
@@ -387,7 +387,7 @@ public class SokobanUI extends Pane {
 		timeButton.setMinHeight(79);
 		timeButton.setMinWidth(309);
 		timeButton.textProperty().bind(timeSeconds.asString());
-		timeButton.setTextFill(Color.RED);
+		timeButton.setTextFill(Color.DARKGRAY);
 		timeButton.setStyle("-fx-background-image: url(\'http://i.imgur.com/xcNLfql.png\');-fx-font-size: 4em;");
 		//setTooltip(exitButton, SokobanPropertyType.EXIT_TOOLTIP);
 		if (timeline != null) {
@@ -727,13 +727,22 @@ public class SokobanUI extends Pane {
 		Button yesButton = new Button(options[0]);
 		Button noButton = new Button("Undo");
 		optionPane.setSpacing(10.0);
-		optionPane.getChildren().addAll(yesButton,noButton);
+		optionPane.getChildren().addAll(yesButton, noButton);
+		optionPane.setAlignment(Pos.CENTER);
 		Label exitLabel = new Label("You Lost :( !\nHead Back to the Main screen?");
-		exitPane.setCenter(exitLabel);
+		Image losei = loadImage("lose.png");
+		ImageView losev = new ImageView(losei);
+		losev.setFitHeight(300);
+		losev.setFitWidth(300);
+		exitPane.setTop(exitLabel);
+		exitPane.setCenter(losev);
 		exitPane.setBottom(optionPane);
-		Scene scene = new Scene(exitPane, 200, 100);
+		Scene scene = new Scene(exitPane, 300, 400);
+		exitPane.setAlignment(exitLabel, Pos.CENTER);
+		exitPane.setAlignment(optionPane, Pos.CENTER);
 		dialogStage.setScene(scene);
 		dialogStage.show();
+
 		// WHAT'S THE USER'S DECISION?
 		yesButton.setOnAction(e -> {
 			// YES, LET'S EXIT
@@ -744,6 +753,7 @@ public class SokobanUI extends Pane {
 			arrowKeyHandler.enabled = true;
 			mouseHandler.enabled = true;
 			undo();
+			lose.stop();
 			timeline.play();
 			dialogStage.close();
 		});
@@ -762,38 +772,31 @@ public class SokobanUI extends Pane {
 		Button yesButton = new Button(options[0]);
 		optionPane.setSpacing(10.0);
 		optionPane.getChildren().addAll(yesButton);
-		Label exitLabel = new Label("YOU WIN!\nHead Back to the Main screen?");
-		exitPane.setCenter(exitLabel);
-		exitPane.setBottom(optionPane);
-		Scene scene = new Scene(exitPane, 200, 100);
+		StackPane textPane = new StackPane();
+		textPane.setPadding(marginlessInsets);
+		Text exitLabel = new Text("YOU WIN!\nHead Back to the Main screen?");
+		exitLabel.setFont(Font.font("Calibri"));
+		exitLabel.setStyle("-fx-text-alignment:center");
+		Image wini = new Image(ImgPath+"trophy.png");
+		ImageView winv = new ImageView(wini);
+		winv.setFitWidth(200);
+		winv.setFitHeight(300);
+		textPane.getChildren().add(exitLabel);
+		exitPane.setTop(textPane);
+		exitPane.setCenter(winv);
+		exitPane.setBottom(yesButton);
+		Scene scene = new Scene(exitPane, 300, 400);
+		exitPane.setAlignment(yesButton,Pos.CENTER);
 		dialogStage.setScene(scene);
 		dialogStage.show();
 		// WHAT'S THE USER'S DECISION?
 		yesButton.setOnAction(e -> {
 			// YES, LET'S EXIT
 			initSplashScreen();
+			win.stop();
 			dialogStage.close();
 		});
 	}
-	/*public void initWinScreen() {
-		mainPane.getChildren().clear();
-		BorderPane winPane = new BorderPane();
-		winPane.setMaxHeight(800);
-		winPane.setMaxWidth(800);
-		Label youWin = new Label("YOU WIN!");
-		youWin.setStyle("-fx-text-fill: red;-fx-font-size: 32pt;-fx-font-family:Segoe UI Light;");
-		winPane.setCenter(youWin);
-		backButton.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-				// TODO Auto-generated method stub
-				eventHandler.respondToBackRequest(primaryStage);
-			}
-		});
-		winPane.setBottom(backButton);
-		mainPane.getChildren().add(winPane);
-	}*/
 
 	public void mouseDragged(MouseEvent me1, MouseEvent me2) {
 		int gridx1 = (int) (me1.getX());
@@ -839,11 +842,13 @@ public class SokobanUI extends Pane {
 
 	public void checkLose() {
 		boolean lost = false;
-		for (int i = 0; i < destinations.size(); i++) {
-			int[] destData = destinations.get(i);
+		A: for (int i = 0; i < boxPositions.size(); i++) {
 			int[] blockData = boxPositions.get(i);
-			if (destData[0] == blockData[0] && destData[1] == blockData[1]) ;
-			else {
+			for(int j=0;j<boxPositions.size();j++) {
+				int[] destData = destinations.get(j);
+				if(destData[0] == blockData[0] && destData[1] == blockData[1])
+					continue A;
+			}
 				if (levelData[blockData[0]-1][blockData[1]] == 1 && levelData[blockData[0]][blockData[1]+1] == 1) {
 					lost = true;
 				}
@@ -855,7 +860,7 @@ public class SokobanUI extends Pane {
 				}
 				if (levelData[blockData[0]][blockData[1]-1] == 1 && levelData[blockData[0]-1][blockData[1]] == 1) {
 					lost = true;
-				}
+
 			}
 		}
 

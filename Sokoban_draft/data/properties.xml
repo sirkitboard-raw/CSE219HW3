@@ -10,6 +10,7 @@
         <property name="WINDOW_HEIGHT"              value="820"></property>
         <property name="SPLASH_SCREEN_IMAGE_NAME"   value="SokobanSplashScreen.png"></property>
         <property name="DATA_PATH"                  value="./data/"></property>
+        <property name="HOME_BUTTON"                value="home.png"></property>
         <property name="BACK_BUTTON"                value="back.png"></property>
         <property name="STAT_BUTTON"                value="stats.png"></property>
         <property name="UNDO_BUTTON"                value="undo.png"></property>
