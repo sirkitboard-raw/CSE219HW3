@@ -20,6 +20,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.HPos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.*;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.media.AudioClip;
@@ -242,14 +243,27 @@ public class SokobanUI extends Pane {
 				.getPropertyOptionsList(SokobanPropertyType.LEVEL_IMAGE_NAMES);
 		ArrayList<String> levelFiles = props
 				.getPropertyOptionsList(SokobanPropertyType.LEVEL_FILES);
-
+		VBox levelSelectionBorder = new VBox();
+		Button padder = new Button();
+		padder.setMinHeight(313);
+		padder.setMaxHeight(313);
+		padder.setStyle("-fx-background-color:transparent;-fx-opacity:0");
 		levelSelectionPane = new FlowPane();
 		//levelSelectionPane.setSpacing(10.0);
-		levelSelectionPane.setHgap(10.0);
-		levelSelectionPane.setVgap(10.0);
-		levelSelectionPane.setAlignment(Pos.CENTER);
+		levelSelectionPane.setVgap(0);
+		levelSelectionPane.setHgap(16);
+		levelSelectionPane.setAlignment(Pos.CENTER_LEFT);
 		// add key listener
 		levelButtons = new ArrayList<Button>();
+		ArrayList<ArrayList<Integer>> levelStats = fileLoader.getStats();
+		int[] wins = new int[7];
+		for(int i=0;i<7;i++) {
+			ArrayList<Integer> levelStat = levelStats.get(i);
+			for(int j=0;j<levelStat.size();j++) {
+				if(levelStat.get(j) > 0)
+					wins[i]++;
+			}
+		}
 		for (int i = 0; i < levels.size(); i++) {
 
 			// GET THE LIST OF LEVEL OPTIONS
@@ -259,7 +273,6 @@ public class SokobanUI extends Pane {
 			String levelImageName = levelImages.get(i);
 			Image levelImage = loadImage(levelImageName);
 			ImageView levelImageView = new ImageView(levelImage);
-
 			// AND BUILD THE BUTTON
 			Button levelButton = new Button();
 			levelButton.setStyle("-fx-background-color: transparent");
@@ -276,18 +289,24 @@ public class SokobanUI extends Pane {
 					initSokobanUI();
 				}
 			});
-			levelButton.setMinHeight(160);
-			levelButton.setMinHeight(160);
-			levelButton.setMaxWidth(160);
-			levelButton.setMaxHeight(160);
-
+			levelButton.setMinHeight(120);
+			levelButton.setMinHeight(120);
+			levelButton.setMaxWidth(120);
+			levelButton.setMaxHeight(120);
+			Label label = new Label("LEVEL "+(i+1), levelButton);
+			label.setContentDisplay(ContentDisplay.BOTTOM);
+			label.setStyle("-fx-font-size:20;-fx-font-weight:bold");
+			if(wins[i]==0) {
+				levelButton.setDisable(true);
+			}
 			levelImageView.fitWidthProperty().bind(levelButton.maxWidthProperty());
 			levelImageView.fitHeightProperty().bind(levelButton.maxHeightProperty());
-			levelSelectionPane.getChildren().add(levelButton);
+			levelSelectionPane.getChildren().add(label);
 		}
 
 		mainPane.setCenter(splashScreenPane);
-		splashScreenPane.getChildren().add(levelSelectionPane);
+		levelSelectionBorder.getChildren().addAll(padder,levelSelectionPane);
+		splashScreenPane.getChildren().add(levelSelectionBorder);
 	}
 
 	/**
@@ -808,7 +827,7 @@ public class SokobanUI extends Pane {
 				System.out.print(imageView.getY());
 				imageView.setFitHeight(cellHeight);
 				imageView.setFitWidth(cellWidth);
-				gameStack.getChildren().addAll(imageView,box);
+				gameStack.getChildren().addAll(imageView, box);
 				TranslateTransition tt = new TranslateTransition(Duration.millis(500), imageView);
 				TranslateTransition tt2 = new TranslateTransition(Duration.millis(500), box);
 				int x = (int)(charPosition[0]*cellWidth - gameStack.getWidth()/2+(cellWidth/2) + xOffset);
@@ -820,9 +839,9 @@ public class SokobanUI extends Pane {
 				tt.setToX(x);
 				tt.setToY(toy);
 				tt2.setFromX(x);
-				tt2.setFromY(y-cellHeight);
+				tt2.setFromY(y - cellHeight);
 				tt2.setToX(x);
-				tt2.setToY(toy-cellHeight);
+				tt2.setToY(toy - cellHeight);
 				tt.play();
 				tt2.play();
 				tt.setOnFinished(e -> {

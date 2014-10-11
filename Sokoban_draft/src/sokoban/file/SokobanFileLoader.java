@@ -34,7 +34,43 @@ public class SokobanFileLoader {
 			}
 			return levelData;
 	}
-
+	public ArrayList<ArrayList<Integer>> getStats() {
+		try {
+			File file = new File("data/stats.sokstat");
+			FileInputStream fis = new FileInputStream(file.getPath());
+			byte[] buffer = new byte[(int)file.length()];
+			DataInputStream dis = new DataInputStream(fis);
+			dis.readFully(buffer);
+			ByteArrayInputStream bis = new ByteArrayInputStream(buffer);
+			dis = new DataInputStream(bis);
+			ArrayList<ArrayList<Integer>> levelStats= new ArrayList<ArrayList<Integer>>();
+			for(int i=0;i<7;i++) {
+				levelStats.add(new ArrayList<Integer>());
+			}
+			for(int i=0;i<7;i++) {
+				int num = dis.readInt();
+				for(int j=0;j<num;j++) {
+					levelStats.get(i).add(dis.readInt());
+				}
+			}
+			return levelStats;
+		} catch (IOException e) {
+			ui.getErrorHandler().processError(SokobanPropertyType.ERROR_INVALID_FILE);
+			try {
+				File file = new File("data/stats.sokstat");
+				file.delete();
+				FileOutputStream fos = new FileOutputStream(file);
+				DataOutputStream dos = new DataOutputStream(fos);
+				// FIRST WRITE THE DIMENSIONS
+				for(int i=0;i<7;i++){
+					dos.writeInt(0);
+				}
+			} catch (IOException e1) {
+				e.printStackTrace();
+			}
+		}
+		return new ArrayList<ArrayList<Integer>>(7);
+	}
 	public void addToStats(int level, int time) {
 		try {
 			File file = new File("data/stats.sokstat");
@@ -102,7 +138,18 @@ public class SokobanFileLoader {
 			writer.write(htmlCode);
 			writer.flush();
 		} catch (IOException e) {
-			e.printStackTrace();
+			ui.getErrorHandler().processError(SokobanPropertyType.ERROR_INVALID_FILE);
+			ui.getErrorHandler().processError(SokobanPropertyType.ERROR_INVALID_FILE);
+			try {
+				File file = new File("data/stats.sokstat");
+				file.delete();
+				FileOutputStream fos = new FileOutputStream(file);
+				DataOutputStream dos = new DataOutputStream(fos);
+				// FIRST WRITE THE DIMENSIONS
+				for(int i=0;i<7;i++){dos.writeInt(0);}
+			} catch (IOException e1) {
+				e.printStackTrace();
+			}
 		}
 	}
 
