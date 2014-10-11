@@ -296,8 +296,10 @@ public class SokobanUI extends Pane {
 			Label label = new Label("LEVEL "+(i+1), levelButton);
 			label.setContentDisplay(ContentDisplay.BOTTOM);
 			label.setStyle("-fx-font-size:20;-fx-font-weight:bold");
-			if(wins[i]==0) {
-				//levelButton.setDisable(true);
+			if(i!=0) {
+				if (wins[i-1] == 0) {
+					levelButton.setDisable(true);
+				}
 			}
 			levelImageView.fitWidthProperty().bind(levelButton.maxWidthProperty());
 			levelImageView.fitHeightProperty().bind(levelButton.maxHeightProperty());
@@ -911,6 +913,7 @@ public class SokobanUI extends Pane {
 				arrowKeyHandler.enabled = true;
 				mouseHandler.enabled = true;
 			});
+			move.play();
 		} else if (levelData[charPosition[0]][charPosition[1] + 1] == 1) {
 			bump.play();
 		} else if (levelData[charPosition[0]][charPosition[1] + 1] == 2) {

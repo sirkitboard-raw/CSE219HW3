@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import application.Main.SokobanPropertyType;
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 import properties_manager.PropertiesManager;
 import sokoban.ui.SokobanUI;
 

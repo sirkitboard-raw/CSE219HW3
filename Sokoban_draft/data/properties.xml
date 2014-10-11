@@ -23,7 +23,7 @@
         <property name="DEFAULT_EXIT_TEXT"          value="Are you sure you wish to Quit?"></property>
         <property name="ERROR_LEVEL_NOT_FOUND"      value="Level doesn't exist"></property>
         <property name="ERROR_INVALID_FILE"         value="Invalid File"></property>
-        <property name="ERROR_NO_MORE_UNDOES"       value="No more undos"></property>
+        <property name="ERROR_NO_MORE_UNDOS"       value="No more undos"></property>
     </property_list>
     <property_options_list>
         <property_options name="LEVEL_OPTIONS">
